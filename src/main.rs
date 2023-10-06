@@ -5,6 +5,7 @@ use axum::{
 };
 use ocastabare::{util::index, v3};
 use std::net::SocketAddr;
+use tower_http::services::ServeDir;
 
 #[derive(FromArgs)]
 /// Bare server init
@@ -31,7 +32,10 @@ async fn main() {
         addr_tuple.0[i] = num.parse::<u8>().unwrap();
     }
 
-    let app = Router::new().route(&init.directory, get(index)).route(
+    let app = Router::new()
+    .nest_service("", ServeDir::new("static"))
+    .route(&init.directory, get(index))
+    .route(
         format!(
             "{}/v3/",
             init.directory.strip_suffix("/").unwrap_or_default()
